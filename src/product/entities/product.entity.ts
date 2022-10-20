@@ -13,6 +13,9 @@ export class Product {
   @Column()
   title: string;
 
+  @Column()
+  name: string;
+
   @Column({ default: null })
   image: string;
 
@@ -24,14 +27,6 @@ export class Product {
 
   @Column({ default: null })
   quantity: string;
-
-  @Column()
-  password: string;
-
-  @Column({ default: null })
-  id_facebook: string;
-  @Column({ default: 1 })
-  role: string;
 
   @CreateDateColumn({
     type: 'timestamp',

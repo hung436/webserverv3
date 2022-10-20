@@ -34,7 +34,7 @@ export class User {
   @Column({ default: null })
   id_facebook: string;
   @Column({ default: 1 })
-  role: string;
+  role: number;
 
   @Column({ default: null })
   refreshToken: string;

@@ -6,18 +6,29 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-
+import { Roles } from 'src/auth/decorator/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
+import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
+// import { AuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { request } from 'http';
+import { Request } from 'express';
+@UseGuards(RolesGuard)
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @UseGuards(AccessTokenGuard)
+  @Roles(Role.Admin)
+  create(@Req() request: Request) {
+    return this.productService.create('das');
   }
 
   @Get()
