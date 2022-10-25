@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-@Entity('users')
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -33,8 +33,8 @@ export class User {
 
   @Column({ default: null })
   id_facebook: string;
-  @Column({ default: 1 })
-  role: number;
+  @Column({ default: 'user' })
+  role: string;
 
   @Column({ default: null })
   refreshToken: string;

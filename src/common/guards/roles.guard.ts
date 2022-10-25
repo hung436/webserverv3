@@ -1,21 +1,15 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-
-import { Observable } from 'rxjs';
-import { ROLES_KEY } from '../../auth/decorator/roles.decorator';
-
-import { Role } from '../../auth/enums/role.enum';
-import { AccessTokenGuard } from './accessToken.guard';
+import { Role } from 'src/auth/enums/role.enum';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { User } from 'src/users/entities/user.entity';
+import { ROLES_KEY } from '../decorator/roles.decorator';
 
 @Injectable()
-export class RolesGuard extends AccessTokenGuard implements CanActivate {
-  constructor(private reflector: Reflector) {
-    super();
-  }
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -23,13 +17,11 @@ export class RolesGuard extends AccessTokenGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest();
-    console.log('user', user);
-    return this.matchRoles(requiredRoles, user);
+    const req = context.switchToHttp().getRequest();
+    const user = <User>req.user;
+
+    return requiredRoles.some((role) => user.role?.includes(role));
   }
-  matchRoles = (roles: any, role: number): boolean => {
-    return true;
-  };
 }
 // import { Role } from 'src/auth/enums/role.enum';
 // import { CanActivate, ExecutionContext, mixin, Type } from '@nestjs/common';

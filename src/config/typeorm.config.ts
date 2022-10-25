@@ -9,5 +9,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   database: process.env.RDS_DB_NAME || 'webappv3',
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: true,
+  timezone: '+07:00',
   autoLoadEntities: true,
 };

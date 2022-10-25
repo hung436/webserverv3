@@ -8,6 +8,8 @@ export class CreateProductDto {
   @IsNotEmpty()
   title: string;
 
-  image: File;
-  price: number;
+  image: string;
+  price: string;
+  promotionPrice: string;
+  quantity: number;
 }

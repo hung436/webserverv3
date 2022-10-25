@@ -1,7 +1,10 @@
+import { Size } from 'src/sizes/entities/size.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,6 +30,10 @@ export class Product {
 
   @Column({ default: null })
   quantity: string;
+  @Column({ default: null })
+  description: string;
+  @Column({ default: null })
+  active: number;
 
   @CreateDateColumn({
     type: 'timestamp',
@@ -40,4 +47,7 @@ export class Product {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
+  @ManyToMany(() => Size)
+  @JoinTable()
+  size: Size[];
 }

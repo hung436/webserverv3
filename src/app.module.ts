@@ -10,6 +10,12 @@ import { UsersModule } from './users/users.module';
 import { SizesModule } from './sizes/sizes.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AddressModule } from './address/address.module';
+import { RolesGuard } from './common/guards/roles.guard';
+import { AccessTokenGuard } from './common/guards/accessToken.guard';
+import { AccessTokenStrategy } from './auth/strategies/accessToken.strategy';
+import { RefreshTokenStrategy } from './auth/strategies/refreshToken.strategy';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,8 +34,15 @@ import { AddressModule } from './address/address.module';
     CategoriesModule,
 
     AddressModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    RolesGuard,
+    AccessTokenGuard,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+  ],
 })
 export class AppModule {}

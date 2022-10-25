@@ -13,10 +13,11 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { Signup } from './dto/signup.dto';
 import { Signin } from './dto/signin.dto';
-import { Roles } from './decorator/roles.decorator';
+import { Roles } from '../common/decorator/roles.decorator';
 import { Role } from './enums/role.enum';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 import { RefreshTokenGuard } from 'src/common/guards/refreshToken.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +28,7 @@ export class AuthController {
     console.log(createAuthDto);
     return this.authService.signin(createAuthDto);
   }
+
   @Post('signup')
   signup(@Body(ValidationPipe) createAuthDto: Signup) {
     return this.authService.signup(createAuthDto);
