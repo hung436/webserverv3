@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   Get,
+  Param,
   HttpCode,
   UseGuards,
 } from '@nestjs/common';
@@ -45,5 +46,14 @@ export class AuthController {
     const userId = req.user['id'];
     const refreshToken = req.user['refreshToken'];
     return this.authService.refreshTokens(userId, refreshToken);
+  }
+  @Get('forgot-password/:email')
+  async sendEmailForgotPassword(@Param() params): Promise<any> {
+    try {
+      const isEmailSent = await this.authService.sendEmailForgotPassword(
+        params.email,
+      );
+      return { success: true };
+    } catch (error) {}
   }
 }

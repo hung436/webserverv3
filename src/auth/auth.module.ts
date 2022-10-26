@@ -6,9 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UsersService } from 'src/users/users.service';
+import { ForgotPassword } from './entities/forgotpassword.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), JwtModule.register({})],
+  imports: [
+    TypeOrmModule.forFeature([User, ForgotPassword]),
+    JwtModule.register({}),
+  ],
   controllers: [AuthController],
   providers: [AuthService, UsersService],
 })

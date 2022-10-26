@@ -35,12 +35,11 @@ export class ProductController {
   // @Roles(Role.Admin)
   @UseInterceptors(AnyFilesInterceptor())
   create(
-    // @Body(ValidationPipe) CreateProductDto: CreateProductDto,
+    @Body() body,
 
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    console.log(files);
-    return 'hng';
+    return this.productService.create(body, files);
   }
 
   @Get()
@@ -52,14 +51,16 @@ export class ProductController {
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
   }
-
+  @UseGuards(AccessTokenGuard)
+  @Roles(Role.Admin)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
   }
-
+  @UseGuards(AccessTokenGuard)
+  @Roles(Role.Admin)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+    return this.productService.remove();
   }
 }

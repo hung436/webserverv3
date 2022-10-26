@@ -1,5 +1,4 @@
-import { Category } from 'src/categories/entities/category.entity';
-import { Image } from 'src/cloudinary/entities/image.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { Size } from 'src/sizes/entities/size.entity';
 import {
   Column,
@@ -8,29 +7,25 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ProductToSize } from './productToSize.entity';
-@Entity('products')
-export class Product {
+@Entity('images')
+export class Image {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  title: string;
-
-  @Column()
-  name: string;
-
   @Column({ default: null })
-  promotionPrice: string;
+  productId: number;
 
-  @Column({ default: null })
-  quantity: string;
+  @Column()
+  imageLink: string;
+  @Column()
+  publicId: string;
   @Column({ default: null })
   description: string;
+  @Column({ default: null })
+  imageDefaut: number;
   @Column({ default: null })
   active: number;
 
@@ -46,10 +41,9 @@ export class Product {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
-  @OneToMany(() => ProductToSize, (producttosize) => producttosize.size)
-  public productToSizes!: ProductToSize[];
-  @OneToMany(() => Image, (image) => image.product)
-  images: Image[];
-  @ManyToOne(() => Category, (category) => category.products)
-  category: Category;
+  // @ManyToMany(() => Size)
+  // @JoinTable()
+  // size: Size[];
+  @ManyToOne(() => Product, (product) => product.images)
+  product: Product;
 }

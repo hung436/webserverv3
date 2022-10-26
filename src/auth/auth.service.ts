@@ -1,4 +1,9 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Signup } from './dto/signup.dto';
 import { Signin } from './dto/signin.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,8 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-
+import * as nodemailer from 'nodemailer';
 import { UsersService } from 'src/users/users.service';
+import { ForgotPassword } from './entities/forgotpassword.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +22,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(ForgotPassword)
+    private readonly forgotRepository: Repository<ForgotPassword>,
     private jwtService: JwtService,
     private usersService: UsersService, // private configService: ConfigService,
   ) {}
@@ -127,5 +135,93 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.name, user.role);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;
+  }
+  async sendEmailForgotPassword(email: string): Promise<boolean> {
+    const userFromDb = await this.userRepository.findOne({
+      where: { email: email },
+    });
+    // if (!userFromDb)
+    //   throw new HttpException('LOGIN.USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    // const tokenModel = await this.createForgottenPasswordToken(email);
+    if (true) {
+      console.log(email);
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: '1951120080@sv.ut.edu.vn',
+          pass: 'huynhhung436',
+        },
+      });
+      const mailOptions = {
+        from: '1951120080@sv.ut.edu.vn',
+        to: email, // list of receivers (separated by ,)
+        subject: 'Frogotten Password',
+        text: 'Forgot Password',
+        html:
+          'Hi! <br><br> If you requested to reset your password<br><br>' +
+          '<a href=' +
+          'https://pizzafood.cf' +
+          ':' +
+          // config.host.port +
+          '/auth/email/reset-password/' +
+          // tokenModel.newPasswordToken +
+          '>Click here</a>', // html body
+      };
+      const sent = await new Promise<boolean>(async function (resolve, reject) {
+        return await transporter.sendMail(mailOptions, async (error, info) => {
+          if (error) {
+            console.log('Message sent: %s', error);
+            return reject(false);
+          }
+          console.log('Message sent: %s', info);
+          resolve(true);
+        });
+      });
+      return sent;
+    } else {
+      throw new HttpException(
+        'REGISTER.USER_NOT_REGISTERED',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+  async createForgottenPasswordToken(email: string) {
+    const forgottenPassword = await this.forgotRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (
+      forgottenPassword &&
+      (new Date().getTime() - forgottenPassword.timestamp.getTime()) / 60000 <
+        15
+    ) {
+      throw new HttpException(
+        'RESET_PASSWORD.EMAIL_SENT_RECENTLY',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } else {
+      const forgottenPasswordModel = await this.forgotRepository.update(
+        { email: email },
+        {
+          email: email,
+          newPasswordToken: (
+            Math.floor(Math.random() * 9000000) + 1000000
+          ).toString(), //Generate 7 digits number,
+          timestamp: new Date(),
+        },
+        // {upsert: true, new: true}
+      );
+      if (forgottenPasswordModel) {
+        return forgottenPasswordModel;
+      } else {
+        throw new HttpException(
+          'LOGIN.ERROR.GENERIC_ERROR',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
   }
 }
