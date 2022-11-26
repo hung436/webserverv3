@@ -16,7 +16,7 @@ export class Size {
   @Column()
   description: string;
   @Column()
-  active: boolean;
+  active: number;
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
@@ -30,5 +30,5 @@ export class Size {
   })
   updated_at: Date;
   @OneToMany(() => ProductToSize, (producttosize) => producttosize.size)
-  public productToSizes!: ProductToSize[];
+  productToSizes: ProductToSize;
 }

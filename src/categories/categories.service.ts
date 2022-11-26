@@ -13,20 +13,22 @@ export class CategoriesService {
     private categoryRepository: Repository<Category>,
   ) {}
   async create(createCategoryDto: CreateCategoryDto): Promise<object> {
-    console.log(createCategoryDto);
     try {
       const check = await this.categoryRepository.findOne({
         where: { name: createCategoryDto.name },
       });
-      if (check) {
+
+      if (!check) {
         const category = new Category();
         category.name = createCategoryDto.name;
+        category.description = createCategoryDto.description;
         await this.categoryRepository.save(category);
-        await this.categoryRepository.create({ name: createCategoryDto.name });
+        return {
+          success: true,
+          message: 'Create Category successfully',
+        };
       }
-
-      // await this.categoryRepository.create({ ten: createCategoryDto.name });
-      return { success: true };
+      return { success: false, message: 'Category name is exist' };
     } catch (error) {}
   }
 

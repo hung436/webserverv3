@@ -1,5 +1,6 @@
 import { Product } from 'src/product/entities/product.entity';
 import { Size } from 'src/sizes/entities/size.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,19 +8,21 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-@Entity('images')
-export class Image {
+import { OrderDetails } from './orderDetail.entity';
+@Entity('orders')
+export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ default: null })
-  productId: number;
+  userId: number;
 
   @Column()
-  imageLink: string;
+  productId: number;
   @Column()
   publicId: string;
   @Column({ default: null })
@@ -44,9 +47,14 @@ export class Image {
   // @ManyToMany(() => Size)
   // @JoinTable()
   // size: Size[];
-  @ManyToOne(() => Product, (product) => product.images, {
+  @ManyToOne(() => User, (user) => user.order, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  product: Product;
+  user: User;
+  @OneToMany(() => OrderDetails, (orderDetail) => orderDetail.order, {
+    // cascade: true,
+    // onDelete: 'CASCADE',
+  })
+  orderDetail: OrderDetails[];
 }

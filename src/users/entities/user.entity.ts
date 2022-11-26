@@ -8,6 +8,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Order } from 'src/order/entities/order.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -29,6 +31,7 @@ export class User {
   address: string;
 
   @Column()
+  @Exclude({ toPlainOnly: true })
   password: string;
 
   @Column({ default: null })
@@ -51,4 +54,10 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
+
+  @OneToMany(() => Order, (order) => order.user, {
+    // cascade: true,
+    // onDelete: 'CASCADE',
+  })
+  order: Order[];
 }

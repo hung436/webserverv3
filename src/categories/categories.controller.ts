@@ -16,20 +16,20 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-@UseGuards(AccessTokenGuard, RolesGuard)
+
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
-
+  @UseGuards(AccessTokenGuard, RolesGuard)
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
-  @Roles(Role.Admin)
-  findAll() {
-    return this.categoriesService.findAll();
+  async findAll() {
+    const data = await this.categoriesService.findAll();
+    return { success: true, message: 'Get Category successfully', data: data };
   }
 
   @Get(':id')
@@ -37,7 +37,7 @@ export class CategoriesController {
     const data = await this.categoriesService.findOne(+id);
     return { success: true, message: '', data: data };
   }
-
+  @UseGuards(AccessTokenGuard, RolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -45,6 +45,7 @@ export class CategoriesController {
   ) {
     return this.categoriesService.update(+id, updateCategoryDto);
   }
+  @UseGuards(AccessTokenGuard, RolesGuard)
   @Roles(Role.Admin)
   @Delete(':id')
   remove(@Param('id') id: string) {

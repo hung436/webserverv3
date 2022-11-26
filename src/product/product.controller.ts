@@ -35,7 +35,7 @@ export class ProductController {
   // @Roles(Role.Admin)
   @UseInterceptors(AnyFilesInterceptor())
   create(
-    @Body() body,
+    @Body(ValidationPipe) body: CreateProductDto,
 
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
@@ -47,20 +47,26 @@ export class ProductController {
     return this.productService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get('getbyid')
+  findOne(@Query('id') id: string) {
+    console.log(id);
     return this.productService.findOne(+id);
   }
-  @UseGuards(AccessTokenGuard)
-  @Roles(Role.Admin)
+  // @UseGuards(AccessTokenGuard)
+  // @Roles(Role.Admin)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @UseInterceptors(AnyFilesInterceptor())
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    return this.productService.update(+id, updateProductDto, files);
   }
   @UseGuards(AccessTokenGuard)
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove();
+  remove(@Param('id') id: number) {
+    return this.productService.remove(id);
   }
 }

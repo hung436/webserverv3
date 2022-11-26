@@ -25,14 +25,37 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signin')
-  signin(@Body(ValidationPipe) createAuthDto: Signin) {
-    console.log(createAuthDto);
-    return this.authService.signin(createAuthDto);
+  async signin(
+    @Body(ValidationPipe) createAuthDto: Signin,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.authService.signin(createAuthDto);
+    res.cookie('refreshToken', data.refreshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 31,
+      sameSite: 'lax',
+      httpOnly: true,
+    });
+    delete data.refreshToken;
+    return data;
   }
 
   @Post('signup')
   signup(@Body(ValidationPipe) createAuthDto: Signup) {
     return this.authService.signup(createAuthDto);
+  }
+  @Post('facebook')
+  async loginfacebook(
+    @Body(ValidationPipe) body,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.authService.signinFacebook(body);
+    res.cookie('refreshToken', data.refreshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 31,
+      sameSite: 'lax',
+      httpOnly: true,
+    });
+    delete data.refreshToken;
+    return this.authService.signinFacebook(body);
   }
   @UseGuards(AccessTokenGuard)
   @Get('logout')
@@ -41,11 +64,20 @@ export class AuthController {
   }
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  refresh(@Req() req: Request) {
-    // console.log(req.user);
+  async refresh(@Req() req: Request, @Res() res: Response) {
+    console.log(req.user);
     const userId = req.user['id'];
     const refreshToken = req.user['refreshToken'];
-    return this.authService.refreshTokens(userId, refreshToken);
+    const { data } = await this.authService.refreshTokens(userId, refreshToken);
+    res.cookie('refreshToken', data.refreshToken, {
+      // expires: new Date(new Date().getTime() + 30 * 1000),
+      maxAge: 1000 * 3600,
+      sameSite: 'strict',
+      httpOnly: true,
+    });
+    delete data.refreshToken;
+
+    return data;
   }
   @Get('forgot-password/:email')
   async sendEmailForgotPassword(@Param() params): Promise<any> {

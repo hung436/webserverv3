@@ -1,11 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateSizeDto } from './dto/create-size.dto';
 import { UpdateSizeDto } from './dto/update-size.dto';
+import { Size } from './entities/size.entity';
 
 @Injectable()
 export class SizesService {
+  constructor(
+    @InjectRepository(Size) private sizeRepository: Repository<Size>,
+  ) {}
   create(createSizeDto: CreateSizeDto) {
-    return 'This action adds a new size';
+    const newSize = new Size();
+    newSize.name = createSizeDto.name;
+    newSize.description = createSizeDto.description;
+    newSize.active = createSizeDto.active;
+
+    console.log(newSize);
+    // return this.sizeRepository.save(createSizeDto);
+    return;
   }
 
   findAll() {
@@ -13,7 +26,7 @@ export class SizesService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} size`;
+    return this.sizeRepository.findOne({ where: { id: id } });
   }
 
   update(id: number, updateSizeDto: UpdateSizeDto) {
