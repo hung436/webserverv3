@@ -7,11 +7,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-@Entity('images')
-export class Image {
+import { Order } from './order.entity';
+@Entity('orderdetails')
+export class OrderDetails {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -21,13 +23,9 @@ export class Image {
   @Column()
   imageLink: string;
   @Column()
-  publicId: string;
-  @Column({ default: null })
-  description: string;
-  @Column({ default: null })
-  imageDefaut: number;
-  @Column({ default: null })
-  active: number;
+  price: string;
+  @Column()
+  quantity: string;
 
   @CreateDateColumn({
     type: 'timestamp',
@@ -41,12 +39,15 @@ export class Image {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
-  // @ManyToMany(() => Size)
-  // @JoinTable()
-  // size: Size[];
-  @ManyToOne(() => Product, (product) => product.images, {
+
+  @ManyToOne(() => Order, (order) => order.orderDetail, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  product: Product;
+  order: Order;
+  @OneToMany(() => Product, (product) => product.images, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  product: Product[];
 }

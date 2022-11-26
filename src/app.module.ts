@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './config/typeorm.config';
+import { DatabaseModule } from './config/typeorm.config';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from './product/product.module';
@@ -16,13 +16,13 @@ import { AccessTokenStrategy } from './auth/strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './auth/strategies/refreshToken.strategy';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CloudinaryService } from './cloudinary/cloudinary.service';
+import { ConfigsModule } from './config/ConfigsModule';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: '.env.local',
-    }),
-    TypeOrmModule.forRoot(typeOrmConfig),
+    ConfigsModule,
+    DatabaseModule,
 
     AuthModule,
 
@@ -36,6 +36,7 @@ import { CloudinaryService } from './cloudinary/cloudinary.service';
 
     AddressModule,
     CloudinaryModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

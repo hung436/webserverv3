@@ -14,6 +14,7 @@ import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
 import { UsersService } from 'src/users/users.service';
 import { ForgotPassword } from './entities/forgotpassword.entity';
+import { resolve } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,15 @@ export class AuthService {
     private jwtService: JwtService,
     private usersService: UsersService, // private configService: ConfigService,
   ) {}
-  async signin({ email, password }: Signin) {
+  //   type signin ={
+  // adsd:Adsasd,
+  //   }
+  async signin({ email, password }: Signin): Promise<{
+    success: boolean;
+    message: string;
+    data: object;
+    refreshToken: string;
+  }> {
     return new Promise(async (resolve) => {
       try {
         const user = await this.userRepository.findOne({
@@ -47,10 +56,29 @@ export class AuthService {
             resolve({
               success: true,
               message: 'Login successful',
-              data: { accessToken, refreshToken },
+              data: {
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                avartar: user.avartar,
+                accessToken,
+              },
+              refreshToken,
             });
-          } else resolve({ success: false, message: 'Password incorrect' });
-        } else resolve({ success: false, message: 'Email incorrect' });
+          } else
+            resolve({
+              success: false,
+              message: 'Password incorrect',
+              data: {},
+              refreshToken: '',
+            });
+        } else
+          resolve({
+            success: false,
+            message: 'Email incorrect',
+            data: {},
+            refreshToken: '',
+          });
       } catch (err) {
         throw new Error(err);
       }
@@ -58,6 +86,55 @@ export class AuthService {
   }
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
+  }
+  signinFacebook(body: any): Promise<{
+    success: boolean;
+    message: string;
+    data: object;
+    refreshToken: string;
+  }> {
+    return new Promise(async (resolve) => {
+      try {
+        const check = await this.userRepository.findOne({
+          where: { email: body.email },
+        });
+        if (!check) {
+          const newUser = new User();
+          newUser.email = body.email;
+          newUser.id_facebook = body.id_fb;
+          newUser.avartar = body.avatar;
+          newUser.name = body.name;
+          const user = await this.userRepository.save(newUser);
+          const { accessToken, refreshToken } = await this.getTokens(
+            user.id,
+            user.email,
+            user.role,
+          );
+          resolve({
+            success: true,
+            message: 'Login facebook successfully',
+            data: {
+              accessToken: accessToken,
+            },
+            refreshToken,
+          });
+        } else {
+          const { accessToken, refreshToken } = await this.getTokens(
+            check.id,
+            check.email,
+            check.role,
+          );
+          resolve({
+            success: true,
+            message: 'Login facebook successfully',
+            data: {
+              accessToken: accessToken,
+            },
+            refreshToken,
+          });
+        }
+      } catch (error) {}
+    });
   }
   signup(user: Signup) {
     return new Promise(async (resolve) => {
@@ -104,7 +181,7 @@ export class AuthService {
         { id, email, role },
         {
           secret: process.env.JWT_ACCESS_SECRET,
-          expiresIn: '15m',
+          expiresIn: '1h',
         },
       ),
       this.jwtService.signAsync(
@@ -134,16 +211,22 @@ export class AuthService {
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
     const tokens = await this.getTokens(user.id, user.name, user.role);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    return {
+      success: true,
+      message: 'RefreshToken successfully',
+      data: tokens,
+    };
   }
   async sendEmailForgotPassword(email: string): Promise<boolean> {
     const userFromDb = await this.userRepository.findOne({
       where: { email: email },
     });
-    // if (!userFromDb)
-    //   throw new HttpException('LOGIN.USER_NOT_FOUND', HttpStatus.NOT_FOUND);
-    // const tokenModel = await this.createForgottenPasswordToken(email);
-    if (true) {
+
+    if (!userFromDb)
+      throw new HttpException('LOGIN.USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    const tokenModel = await this.createForgottenPasswordToken(email);
+    console.log('tokenmodel', tokenModel);
+    if (tokenModel) {
       console.log(email);
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -164,9 +247,9 @@ export class AuthService {
           '<a href=' +
           'https://pizzafood.cf' +
           ':' +
-          // config.host.port +
+          process.env.FE_URL +
           '/auth/email/reset-password/' +
-          // tokenModel.newPasswordToken +
+          tokenModel.newPasswordToken +
           '>Click here</a>', // html body
       };
       const sent = await new Promise<boolean>(async function (resolve, reject) {
@@ -193,29 +276,24 @@ export class AuthService {
         email: email,
       },
     });
-    if (
-      forgottenPassword &&
-      (new Date().getTime() - forgottenPassword.timestamp.getTime()) / 60000 <
-        15
-    ) {
+    const time =
+      (new Date().getTime() - forgottenPassword.timestamp.getTime()) / 60000;
+
+    if (forgottenPassword && time < 15) {
+      console.log(time);
       throw new HttpException(
         'RESET_PASSWORD.EMAIL_SENT_RECENTLY',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } else {
-      const forgottenPasswordModel = await this.forgotRepository.update(
-        { email: email },
-        {
-          email: email,
-          newPasswordToken: (
-            Math.floor(Math.random() * 9000000) + 1000000
-          ).toString(), //Generate 7 digits number,
-          timestamp: new Date(),
-        },
-        // {upsert: true, new: true}
-      );
-      if (forgottenPasswordModel) {
-        return forgottenPasswordModel;
+      forgottenPassword.email = email;
+      forgottenPassword.newPasswordToken = (
+        Math.floor(Math.random() * 9000000) + 1000000
+      ).toString();
+      forgottenPassword.timestamp = new Date();
+      const check = await this.forgotRepository.save(forgottenPassword);
+      if (check) {
+        return forgottenPassword;
       } else {
         throw new HttpException(
           'LOGIN.ERROR.GENERIC_ERROR',

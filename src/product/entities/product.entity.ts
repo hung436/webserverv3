@@ -46,8 +46,8 @@ export class Product {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
-  @OneToMany(() => ProductToSize, (producttosize) => producttosize.size)
-  public productToSizes!: ProductToSize[];
+  @OneToMany(() => ProductToSize, (producttosize) => producttosize.product)
+  productToSizes: ProductToSize[];
   @OneToMany(() => Image, (image) => image.product)
   images: Image[];
   @ManyToOne(() => Category, (category) => category.products)
