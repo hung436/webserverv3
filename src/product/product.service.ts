@@ -7,7 +7,7 @@ import { Category } from 'src/categories/entities/category.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Image } from 'src/cloudinary/entities/image.entity';
 import { SizesService } from 'src/sizes/sizes.service';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -30,6 +30,7 @@ export class ProductService {
   ): Promise<object> {
     return new Promise<object>(async (resolve) => {
       try {
+        const prices = JSON.parse(product.prices);
         const check = await this.productRepository.findOne({
           where: { name: product.name },
         });
@@ -58,12 +59,13 @@ export class ProductService {
           newProduct.description = product.description;
           newProduct.quantity = product.quantity;
           newProduct.title = product.title;
+          newProduct.price = prices[0].price;
           newProduct.category = category;
           newProduct.images = images;
 
           await this.productRepository.save(newProduct);
-          const prices = JSON.parse(product.prices);
-          if (prices) {
+
+          if (prices && prices.length > 0) {
             for (const price of prices) {
               const newProductToSize = new ProductToSize();
               const size = await this.sizeService.findOne(price.size);
@@ -84,7 +86,27 @@ export class ProductService {
     });
   }
 
-  async findAll(papeSizes = 999, pageIndex = 0) {
+  async findAll(
+    papeSizes = 5,
+    pageIndex = 0,
+    searchText: string,
+    orderBy = 'created_at+',
+    params: { categoryId: number },
+  ) {
+    let dataWhere: object = {};
+    if (params && params.categoryId) {
+      dataWhere = { categoryId: params.categoryId };
+    }
+    if (searchText) {
+      dataWhere = { name: Like(`%${searchText}%`) };
+    }
+    const orderData = {};
+    if (orderBy) {
+      orderBy.slice(-1) === '-'
+        ? (orderData[orderBy.substring(0, orderBy.length - 1)] = 'ASC')
+        : (orderData[orderBy.substring(0, orderBy.length - 1)] = 'DESC');
+    }
+
     const [items, count] = await this.productRepository.findAndCount({
       skip: papeSizes * pageIndex,
       take: papeSizes,
@@ -93,7 +115,11 @@ export class ProductService {
         category: true,
         productToSizes: { size: true },
       },
-      order: { created_at: 'DESC' },
+      where: dataWhere,
+      // (params && params.categoryId) || searchText
+      //   ? { name: Like(`%${searchText}%`), categoryId: 2 }
+      //   : {},
+      order: orderData,
     });
     return {
       success: true,
@@ -126,16 +152,16 @@ export class ProductService {
   ) {
     return new Promise<object>(async (resolve) => {
       try {
-        console.log('pr', product);
         const check = await this.productRepository.findOne({
           where: { id: id },
         });
         if (check) {
           const images: any = [];
+          //update file
           if (files) {
             for (const file of files) {
               const result = await this.CloudinaryService.uploadImage(file);
-              console.log(result);
+
               const image = await this.imageRepository.findOne({
                 where: { productId: id },
               });
@@ -149,26 +175,25 @@ export class ProductService {
           const Product = await this.productRepository.findOne({
             where: { id: id },
           });
-          const category = await this.categoriesService.findOne(
-            parseInt(product.category),
-          );
+
           Product.name = product.name;
           Product.promotionPrice = product.promotionPrice;
           Product.description = product.description;
           Product.quantity = product.quantity;
           Product.title = product.title;
-          Product.category = category;
+          Product.categoryId = parseInt(product.category);
 
           await this.productRepository.save(Product);
           const prices = JSON.parse(product.prices);
           if (prices) {
             for (const price of prices) {
-              const newProductToSize = new ProductToSize();
-              const size = await this.sizeService.findOne(price.size);
-              newProductToSize.price = parseInt(price.price);
-              newProductToSize.size = size;
-              newProductToSize.product = Product;
-              await this.proToSizeRepository.save(newProductToSize);
+              const ProductToSize = await this.proToSizeRepository.findOne({
+                where: { productId: id, sizeId: price.size },
+              });
+
+              ProductToSize.price = parseInt(price.price);
+
+              await this.proToSizeRepository.save(ProductToSize);
             }
           }
 

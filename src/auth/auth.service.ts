@@ -61,6 +61,7 @@ export class AuthService {
                 name: user.name,
                 role: user.role,
                 avartar: user.avartar,
+                address: user.address,
                 accessToken,
               },
               refreshToken,
@@ -207,6 +208,7 @@ export class AuthService {
       refreshToken,
       user.refreshToken,
     );
+    console.log(refreshTokenMatches);
 
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
     const tokens = await this.getTokens(user.id, user.name, user.role);
@@ -225,7 +227,7 @@ export class AuthService {
     if (!userFromDb)
       throw new HttpException('LOGIN.USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     const tokenModel = await this.createForgottenPasswordToken(email);
-    console.log('tokenmodel', tokenModel);
+
     if (tokenModel) {
       console.log(email);
       const transporter = nodemailer.createTransport({
@@ -280,7 +282,6 @@ export class AuthService {
       (new Date().getTime() - forgottenPassword.timestamp.getTime()) / 60000;
 
     if (forgottenPassword && time < 15) {
-      console.log(time);
       throw new HttpException(
         'RESET_PASSWORD.EMAIL_SENT_RECENTLY',
         HttpStatus.INTERNAL_SERVER_ERROR,

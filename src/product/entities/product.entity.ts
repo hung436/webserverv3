@@ -23,9 +23,13 @@ export class Product {
 
   @Column()
   name: string;
+  @Column()
+  categoryId: number;
 
   @Column({ default: null })
   promotionPrice: string;
+  @Column({ default: null })
+  price: string;
 
   @Column({ default: null })
   quantity: string;

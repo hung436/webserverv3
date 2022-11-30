@@ -26,7 +26,8 @@ export class OrderDetails {
   price: string;
   @Column()
   quantity: string;
-
+  @Column()
+  size: string;
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',

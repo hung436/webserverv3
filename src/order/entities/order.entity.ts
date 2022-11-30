@@ -21,16 +21,18 @@ export class Order {
   @Column({ default: null })
   userId: number;
 
-  @Column()
-  productId: number;
-  @Column()
-  publicId: string;
   @Column({ default: null })
-  description: string;
+  note: string;
   @Column({ default: null })
-  imageDefaut: number;
+  methor_payment: string;
   @Column({ default: null })
-  active: number;
+  address: string;
+  @Column({ default: null })
+  phone: string;
+  @Column({ default: null })
+  status: number;
+  @Column({ default: null })
+  totalPrice: string;
 
   @CreateDateColumn({
     type: 'timestamp',
