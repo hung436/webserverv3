@@ -46,14 +46,13 @@ export class UsersController {
 
   @Get('infor')
   getByToken(@Req() req: Request) {
-    console.log(req.user);
     return this.usersService.findOne(req.user['id']);
   }
 
   @Roles(Role.Admin)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(@Body() userData: UpdateUserDto) {
+    return this.usersService.update(userData.id, userData);
   }
 
   @Roles(Role.Admin)

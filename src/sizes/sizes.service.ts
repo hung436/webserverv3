@@ -16,7 +16,6 @@ export class SizesService {
     newSize.description = createSizeDto.description;
     newSize.active = createSizeDto.active;
 
-    console.log(newSize);
     // return this.sizeRepository.save(createSizeDto);
     return;
   }

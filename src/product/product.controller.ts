@@ -43,8 +43,16 @@ export class ProductController {
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Query() data) {
+    const { pageIndex, pageSizes, searchText, orderBy, params } = data;
+    const paramsJson = params ? JSON.parse(params) : {};
+    return this.productService.findAll(
+      pageSizes,
+      pageIndex,
+      searchText,
+      orderBy,
+      paramsJson,
+    );
   }
 
   @Get('getbyid')

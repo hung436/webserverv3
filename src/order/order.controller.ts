@@ -1,15 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
+import { Request } from 'express';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
-
+  @UseGuards(AccessTokenGuard)
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  async create(@Req() req: Request, @Body() order) {
+    const data = this.orderService.create(req.user['id'], order);
+    return data;
   }
 
   @Get()
