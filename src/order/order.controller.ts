@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -26,8 +27,10 @@ export class OrderController {
   }
 
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  findAll(@Query() data) {
+    const { pageIndex, pageSizes, searchText, orderBy } = data;
+
+    return this.orderService.findAll(pageSizes, pageIndex, searchText, orderBy);
   }
 
   @Get(':id')
