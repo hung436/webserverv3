@@ -41,6 +41,7 @@ export class AuthController {
 
   @Post('signup')
   signup(@Body(ValidationPipe) createAuthDto: Signup) {
+    console.log(createAuthDto);
     return this.authService.signup(createAuthDto);
   }
   @Post('facebook')

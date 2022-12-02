@@ -1,7 +1,7 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -43,10 +43,43 @@ export class OrderService {
     return 'This action adds a new order';
   }
 
-  findAll() {
-    return `This action returns all order`;
-  }
+  async findAll(
+    papeSizes = 5,
+    pageIndex = 0,
+    searchText: string,
+    orderBy = 'created_at+',
+  ) {
+    let dataWhere: object = {};
+    if (searchText) {
+      dataWhere = { name: Like(`%${searchText}%`) };
+    }
+    const orderData = {};
+    if (orderBy) {
+      orderBy.slice(-1) === '-'
+        ? (orderData[orderBy.substring(0, orderBy.length - 1)] = 'ASC')
+        : (orderData[orderBy.substring(0, orderBy.length - 1)] = 'DESC');
+    }
 
+    const [items, count] = await this.orderRepository.findAndCount({
+      skip: papeSizes * pageIndex,
+      take: papeSizes,
+      relations: {
+        orderDetail: true,
+        user: true,
+      },
+      where: dataWhere,
+      // (params && params.categoryId) || searchText
+      //   ? { name: Like(`%${searchText}%`), categoryId: 2 }
+      //   : {},
+      order: orderData,
+    });
+    return {
+      success: true,
+      message: 'Get order successfully',
+      data: items,
+      totalCountItem: count,
+    };
+  }
   findOne(id: number) {
     return `This action returns a #${id} order`;
   }
