@@ -1,5 +1,6 @@
 import { Category } from 'src/categories/entities/category.entity';
 import { Image } from 'src/cloudinary/entities/image.entity';
+import { OrderDetails } from 'src/order/entities/orderDetail.entity';
 import { Size } from 'src/sizes/entities/size.entity';
 import {
   Column,

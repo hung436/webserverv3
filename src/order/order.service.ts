@@ -1,6 +1,7 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
+import { Product } from 'src/product/entities/product.entity';
 import { Like, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -11,6 +12,7 @@ import { OrderDetails } from './entities/orderDetail.entity';
 export class OrderService {
   constructor(
     @InjectRepository(Order) private orderRepository: Repository<Order>,
+    @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(OrderDetails)
     private orderDetailsRepository: Repository<OrderDetails>,
   ) {}
@@ -18,10 +20,13 @@ export class OrderService {
     try {
       const arrOrder = [];
       for (const order of orders.products) {
+        const product = await this.productRepository.findOne({
+          where: { id: order.id },
+        });
         const newOrderDetails = new OrderDetails();
         newOrderDetails.price = order.price;
         newOrderDetails.quantity = order.quantity;
-        newOrderDetails.productId = order.id;
+        newOrderDetails.product = product;
         newOrderDetails.size = order.size;
         newOrderDetails.imageLink = order.image;
         await this.orderDetailsRepository.save(newOrderDetails);
@@ -64,7 +69,7 @@ export class OrderService {
       skip: papeSizes * pageIndex,
       take: papeSizes,
       relations: {
-        orderDetail: true,
+        orderDetail: { product: true },
         user: true,
       },
       where: dataWhere,

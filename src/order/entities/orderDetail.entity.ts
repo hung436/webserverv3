@@ -4,10 +4,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -16,9 +18,6 @@ import { Order } from './order.entity';
 export class OrderDetails {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ default: null })
-  productId: number;
 
   @Column()
   imageLink: string;
@@ -46,9 +45,7 @@ export class OrderDetails {
     onDelete: 'CASCADE',
   })
   order: Order;
-  @OneToMany(() => Product, (product) => product.images, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  product: Product[];
+  @OneToOne(() => Product)
+  @JoinColumn()
+  product: Product;
 }
