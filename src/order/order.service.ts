@@ -42,10 +42,10 @@ export class OrderService {
       newOrder.phone = orders.phone;
       newOrder.methor_payment = 'Thanh toan khi nhan hang';
       await this.orderRepository.save(newOrder);
+      return { success: true };
     } catch (error) {
       console.log(error);
     }
-    return 'This action adds a new order';
   }
 
   async findAll(
