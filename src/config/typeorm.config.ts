@@ -38,7 +38,7 @@ import { Module } from '@nestjs/common';
           timezone: '+07:00',
           autoLoadEntities: true,
           extra: {
-            ssl: process.env.NODE_ENV === 'production' ? true : false,
+            ssl: process.env.NODE_ENV === 'production' ? false : true,
           },
         };
       },
