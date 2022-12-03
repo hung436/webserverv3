@@ -1,11 +1,17 @@
 {
   "version": 2,
   "name": "webserverv3",
-
+  "builds": [
+    {
+      "src": "src/main.ts",
+      "use": "@vecel/node"
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/main.js"
+      "dest": "src/main.js",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"]
     }
   ]
 }
