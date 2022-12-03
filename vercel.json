@@ -1,12 +1,7 @@
 {
   "version": 2,
   "name": "webserverv3",
-  "builds": [
-    {
-      "src": "src/(.*)",
-      "use": "@vercel/node"
-    }
-  ],
+
   "routes": [
     {
       "src": "/(.*)",
