@@ -3,14 +3,14 @@
   "name": "webserverv3",
   "builds": [
     {
-      "src": "dist/main.ts",
+      "src": "src/(.*)",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/main.js",
+      "dest": "dist/main.js",
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"]
     }
   ]
