@@ -71,9 +71,8 @@ export class AuthController {
     const refreshToken = req.user['refreshToken'];
     const { data } = await this.authService.refreshTokens(userId, refreshToken);
     res.cookie('refreshToken', data.refreshToken, {
-      // expires: new Date(new Date().getTime() + 30 * 1000),
-      maxAge: 1000 * 3600,
-      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24 * 31,
+      sameSite: 'lax',
       httpOnly: true,
     });
     delete data.refreshToken;
