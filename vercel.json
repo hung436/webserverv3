@@ -3,7 +3,7 @@
   "name": "webserverv3",
   "builds": [
     {
-      "src": "src/main.ts",
+      "src": "dist/main.ts",
       "use": "@vercel/node"
     }
   ],
