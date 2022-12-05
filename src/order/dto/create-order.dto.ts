@@ -8,7 +8,7 @@ export class CreateOrderDto {
   note: string;
 
   methor_payment: string;
-
+  status: number;
   size: number;
   quantity: number;
 }

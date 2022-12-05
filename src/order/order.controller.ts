@@ -42,6 +42,13 @@ export class OrderController {
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(+id, updateOrderDto);
   }
+  @Patch('updatestatus/:id')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    return this.orderService.update(+id, updateOrderDto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
