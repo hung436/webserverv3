@@ -30,7 +30,7 @@ export class User {
   @Column({ default: null })
   address: string;
 
-  @Column()
+  @Column({ default: null })
   @Exclude({ toPlainOnly: true })
   password: string;
 

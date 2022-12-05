@@ -19,6 +19,7 @@ import { Role } from './enums/role.enum';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 import { RefreshTokenGuard } from 'src/common/guards/refreshToken.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { ResponseError, ResponseSuccess } from 'src/common/dto/response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -49,14 +50,13 @@ export class AuthController {
     @Body(ValidationPipe) body,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const data = await this.authService.signinFacebook(body);
-    res.cookie('refreshToken', data.refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 31,
-      sameSite: 'lax',
-      httpOnly: true,
-    });
-    delete data.refreshToken;
-    return this.authService.signinFacebook(body);
+    try {
+      const data = await this.authService.signinFacebook(body, res);
+
+      return new ResponseSuccess('LOGIN.FACEBOOK.SUCCESS', data);
+    } catch (error) {
+      return new ResponseError('LOGIN.ERROR', error);
+    }
   }
   @UseGuards(AccessTokenGuard)
   @Get('logout')
@@ -65,17 +65,19 @@ export class AuthController {
   }
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  async refresh(@Req() req: Request, @Res() res: Response) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     console.log('refes', req.user);
     const userId = req.user['id'];
     const refreshToken = req.user['refreshToken'];
-    const { data } = await this.authService.refreshTokens(userId, refreshToken);
-    res.cookie('refreshToken', data.refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 31,
-      sameSite: 'lax',
-      httpOnly: true,
-    });
-    delete data.refreshToken;
+
+    const data = await this.authService.refreshTokens(
+      userId,
+      refreshToken,
+      res,
+    );
 
     return data;
   }
@@ -85,7 +87,13 @@ export class AuthController {
       const isEmailSent = await this.authService.sendEmailForgotPassword(
         params.email,
       );
-      return { success: true };
-    } catch (error) {}
+      if (isEmailSent) {
+        return new ResponseSuccess('LOGIN.EMAIL_RESENT', null);
+      } else {
+        return new ResponseError('REGISTRATION.ERROR.MAIL_NOT_SENT');
+      }
+    } catch (error) {
+      return new ResponseError('LOGIN.ERROR.SEND_EMAIL', error);
+    }
   }
 }

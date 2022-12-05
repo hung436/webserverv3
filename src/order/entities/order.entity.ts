@@ -54,9 +54,6 @@ export class Order {
     onDelete: 'CASCADE',
   })
   user: User;
-  @OneToMany(() => OrderDetails, (orderDetail) => orderDetail.order, {
-    // cascade: true,
-    // onDelete: 'CASCADE',
-  })
-  orderDetail: OrderDetails[];
+  @OneToMany(() => OrderDetails, (orderDetail) => orderDetail.order)
+  orderDetails: OrderDetails[];
 }

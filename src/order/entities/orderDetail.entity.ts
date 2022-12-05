@@ -19,6 +19,11 @@ export class OrderDetails {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: null })
+  orderId: number;
+  @Column({ default: null })
+  productId: number;
+
   @Column()
   imageLink: string;
   @Column()
@@ -40,12 +45,11 @@ export class OrderDetails {
   })
   updated_at: Date;
 
-  @ManyToOne(() => Order, (order) => order.orderDetail, {
+  @ManyToOne(() => Order, (order) => order.orderDetails, {
     cascade: true,
     onDelete: 'CASCADE',
   })
   order: Order;
-  @OneToOne(() => Product)
-  @JoinColumn()
+  @ManyToOne(() => Product, (product) => product.orderDetails)
   product: Product;
 }
