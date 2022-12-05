@@ -15,6 +15,7 @@ import * as nodemailer from 'nodemailer';
 import { UsersService } from 'src/users/users.service';
 import { ForgotPassword } from './entities/forgotpassword.entity';
 import { resolve } from 'path';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -88,14 +89,10 @@ export class AuthService {
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
-  signinFacebook(body: any): Promise<{
-    success: boolean;
-    message: string;
-    data: object;
-    refreshToken: string;
-  }> {
+  signinFacebook(body: any, res: Response) {
     return new Promise(async (resolve) => {
       try {
+        console.log(body);
         const check = await this.userRepository.findOne({
           where: { email: body.email },
         });
@@ -111,13 +108,13 @@ export class AuthService {
             user.email,
             user.role,
           );
+          res.cookie('refreshToken', refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 31,
+            sameSite: 'lax',
+            httpOnly: true,
+          });
           resolve({
-            success: true,
-            message: 'Login facebook successfully',
-            data: {
-              accessToken: accessToken,
-            },
-            refreshToken,
+            accessToken: accessToken,
           });
         } else {
           const { accessToken, refreshToken } = await this.getTokens(
@@ -125,16 +122,18 @@ export class AuthService {
             check.email,
             check.role,
           );
+          res.cookie('refreshToken', refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24 * 31,
+            sameSite: 'lax',
+            httpOnly: true,
+          });
           resolve({
-            success: true,
-            message: 'Login facebook successfully',
-            data: {
-              accessToken: accessToken,
-            },
-            refreshToken,
+            accessToken: accessToken,
           });
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log('error', error);
+      }
     });
   }
   signup(user: Signup) {
@@ -199,11 +198,12 @@ export class AuthService {
       refreshToken,
     };
   }
-  async refreshTokens(userId: number, refreshToken: string) {
+  async refreshTokens(userId: number, refreshToken: string, res: Response) {
     const user = await this.usersService.findOne(userId);
 
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access Denied');
+
     const refreshTokenMatches = await bcrypt.compareSync(
       refreshToken,
       user.refreshToken,
@@ -213,10 +213,15 @@ export class AuthService {
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
     const tokens = await this.getTokens(user.id, user.name, user.role);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
+    res.cookie('refreshToken', tokens.refreshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 31,
+      sameSite: 'lax',
+      httpOnly: true,
+    });
     return {
       success: true,
       message: 'RefreshToken successfully',
-      data: tokens,
+      data: { accessToken: tokens.accessToken },
     };
   }
   async sendEmailForgotPassword(email: string): Promise<boolean> {
@@ -231,9 +236,7 @@ export class AuthService {
     if (tokenModel) {
       console.log(email);
       const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        service: 'gmail',
         auth: {
           user: '1951120080@sv.ut.edu.vn',
           pass: 'huynhhung436',
@@ -245,14 +248,12 @@ export class AuthService {
         subject: 'Frogotten Password',
         text: 'Forgot Password',
         html:
-          'Hi! <br><br> If you requested to reset your password<br><br>' +
+          'Xin chào! <br><br> Nếu bạn muốn reset Password<br><br>' +
           '<a href=' +
-          'https://pizzafood.cf' +
-          ':' +
           process.env.FE_URL +
-          '/auth/email/reset-password/' +
+          '/login' +
           tokenModel.newPasswordToken +
-          '>Click here</a>', // html body
+          '>Nhấn vào đây</a>', // html body
       };
       const sent = await new Promise<boolean>(async function (resolve, reject) {
         return await transporter.sendMail(mailOptions, async (error, info) => {

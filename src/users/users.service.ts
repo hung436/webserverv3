@@ -32,7 +32,7 @@ export class UsersService {
   findOne(id: number) {
     return this.userRepository.findOne({
       where: { id: id },
-      relations: { order: { orderDetail: { product: true } } },
+      relations: { order: { orderDetails: { product: true } } },
     });
   }
 

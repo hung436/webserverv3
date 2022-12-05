@@ -37,7 +37,7 @@ export class OrderService {
       newOrder.userId = id;
       newOrder.status = 1;
       newOrder.totalPrice = orders.total;
-      newOrder.orderDetail = arrOrder;
+      newOrder.orderDetails = arrOrder;
       newOrder.address = orders.address;
       newOrder.phone = orders.phone;
       newOrder.methor_payment = 'Thanh toan khi nhan hang';
@@ -69,7 +69,7 @@ export class OrderService {
       skip: papeSizes * pageIndex,
       take: papeSizes,
       relations: {
-        orderDetail: { product: true },
+        orderDetails: { product: true },
         user: true,
       },
       where: dataWhere,
