@@ -15,12 +15,16 @@ import { Module } from '@nestjs/common';
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         let type: DatabaseType;
+        let extra = null;
         switch (process.env.DB_TYPE) {
           case 'mysql':
             type = 'mysql';
             break;
           case 'postgres':
             type = 'postgres';
+            extra = {
+              ssl: process.env.NODE_ENV === 'production' ? false : true,
+            };
             break;
           default:
             type = 'mysql';
@@ -37,9 +41,7 @@ import { Module } from '@nestjs/common';
           synchronize: true,
           timezone: '+07:00',
           autoLoadEntities: true,
-          extra: {
-            ssl: process.env.NODE_ENV === 'production' ? false : true,
-          },
+          extra,
         };
       },
     }),
