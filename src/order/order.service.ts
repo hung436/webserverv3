@@ -2,7 +2,7 @@ import { Injectable, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
 import { Product } from 'src/product/entities/product.entity';
-import { Like, Repository } from 'typeorm';
+import { Like, MoreThan, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -33,9 +33,12 @@ export class OrderService {
         arrOrder.push(newOrderDetails);
       }
       const newOrder = new Order();
-
+      const date = new Date();
       newOrder.userId = id;
       newOrder.status = 1;
+      newOrder.estimatedDeliveryDate = new Date(
+        date.setDate(date.getDate() + 2),
+      );
       newOrder.totalPrice = orders.total;
       newOrder.orderDetails = arrOrder;
       newOrder.address = orders.address;
@@ -52,7 +55,8 @@ export class OrderService {
     papeSizes = 5,
     pageIndex = 0,
     searchText: string,
-    orderBy = 'created_at+',
+    orderBy = 'id+',
+    status: number = null,
   ) {
     let dataWhere: object = {};
     if (searchText) {
@@ -72,7 +76,7 @@ export class OrderService {
         orderDetails: { product: true },
         user: true,
       },
-      where: dataWhere,
+      where: status ? { ...dataWhere, status: MoreThan(status) } : dataWhere,
       // (params && params.categoryId) || searchText
       //   ? { name: Like(`%${searchText}%`), categoryId: 2 }
       //   : {},

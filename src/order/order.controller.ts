@@ -28,9 +28,15 @@ export class OrderController {
 
   @Get()
   findAll(@Query() data) {
-    const { pageIndex, pageSizes, searchText, orderBy } = data;
+    const { pageIndex, pageSizes, searchText, orderBy, status } = data;
 
-    return this.orderService.findAll(pageSizes, pageIndex, searchText, orderBy);
+    return this.orderService.findAll(
+      pageSizes,
+      pageIndex,
+      searchText,
+      orderBy,
+      status,
+    );
   }
 
   @Get(':id')

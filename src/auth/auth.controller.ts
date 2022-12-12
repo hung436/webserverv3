@@ -42,7 +42,6 @@ export class AuthController {
 
   @Post('signup')
   signup(@Body(ValidationPipe) createAuthDto: Signup) {
-    console.log(createAuthDto);
     return this.authService.signup(createAuthDto);
   }
   @Post('facebook')
@@ -69,7 +68,6 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log('refes', req.user);
     const userId = req.user['id'];
     const refreshToken = req.user['refreshToken'];
 

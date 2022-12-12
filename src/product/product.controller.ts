@@ -57,7 +57,6 @@ export class ProductController {
 
   @Get('getbyid')
   findOne(@Query('id') id: string) {
-    console.log(id);
     return this.productService.findOne(+id);
   }
   // @UseGuards(AccessTokenGuard)

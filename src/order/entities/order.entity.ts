@@ -33,15 +33,18 @@ export class Order {
   status: number;
   @Column({ default: null })
   totalPrice: string;
-
+  @Column({
+    default: null,
+  })
+  estimatedDeliveryDate: Date;
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   created_at: Date;
 
   @UpdateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })

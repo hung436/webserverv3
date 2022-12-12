@@ -92,7 +92,6 @@ export class AuthService {
   signinFacebook(body: any, res: Response) {
     return new Promise(async (resolve) => {
       try {
-        console.log(body);
         const check = await this.userRepository.findOne({
           where: { email: body.email },
         });
@@ -208,7 +207,6 @@ export class AuthService {
       refreshToken,
       user.refreshToken,
     );
-    console.log(refreshTokenMatches);
 
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
     const tokens = await this.getTokens(user.id, user.name, user.role);
@@ -234,7 +232,6 @@ export class AuthService {
     const tokenModel = await this.createForgottenPasswordToken(email);
 
     if (tokenModel) {
-      console.log(email);
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
