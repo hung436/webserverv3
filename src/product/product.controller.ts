@@ -31,8 +31,8 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post('create')
-  // @UseGuards(AccessTokenGuard)
-  // @Roles(Role.Admin)
+  @UseGuards(AccessTokenGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(AnyFilesInterceptor())
   create(
     @Body(ValidationPipe) body: CreateProductDto,

@@ -15,7 +15,7 @@ const options = {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(options);
-  await app.use(cookieParser());
+  app.use(cookieParser());
   const config = new DocumentBuilder()
     .setTitle('Webserver Version 3')
     .setDescription('This is a web server')

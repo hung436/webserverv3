@@ -32,7 +32,7 @@ export class Order {
   @Column({ default: null })
   status: number;
   @Column({ default: null })
-  totalPrice: string;
+  totalPrice: number;
   @Column({
     default: null,
   })

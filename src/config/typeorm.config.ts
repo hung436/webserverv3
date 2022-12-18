@@ -38,8 +38,9 @@ import { Module } from '@nestjs/common';
           password: process.env.DB_PASSWORD,
           database: process.env.DB_DATABASE,
           entities: [__dirname + '/../**/*.entity.{js,ts}'],
-          synchronize: true,
+          synchronize: process.env.NODE_ENV === 'production' ? false : true,
           timezone: '+07:00',
+          logging: false,
           autoLoadEntities: true,
           extra,
         };
